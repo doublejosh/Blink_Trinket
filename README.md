@@ -1,4 +1,4 @@
-Blink_Trinket
+Force Blink the Trinket
 =============
 
 Demo of using a force sensor to control the test LED on a Trinket controller.
