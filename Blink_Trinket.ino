@@ -16,7 +16,7 @@ void loop() {
   //float flexiforce_reading = 1.0;
   int flexiforce_reading = analogRead(1);
   //int blink_delay = map(flexiforce_reading, 0, 1023, 30, 1200);
-  float blink_delay = fscale(0, 1023, 500, 0, flexiforce_reading, 8);
+  float blink_delay = fscale(0, 1023, 400, 10, flexiforce_reading, -2);
 
   digitalWrite(test_led, HIGH);
   delay(blink_delay);
