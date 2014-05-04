@@ -2,6 +2,7 @@
  * Sense and blink.
  */
 
+// Trinket built in LED is 1, standard Arduinos use 13.
 int test_led = 13; // Trinket built in LED.
 boolean DEBUG = true;
 
