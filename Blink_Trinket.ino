@@ -2,13 +2,18 @@
  * Sense and blink.
  */
 
-int test_led = 1; // Trinket built in LED.
+int test_led = 13; // Trinket built in LED.
+boolean DEBUG = true;
 
 // Basic setup.
 void setup() {                
   // Initialize the digital pin as an output.
   pinMode(test_led, OUTPUT);
   pinMode(2, INPUT);
+  
+  if (DEBUG) {
+    Serial.begin(9600);
+  }
 }
 
 // Master looper.
@@ -16,7 +21,14 @@ void loop() {
   //float flexiforce_reading = 1.0;
   int flexiforce_reading = analogRead(1);
   //int blink_delay = map(flexiforce_reading, 0, 1023, 30, 1200);
-  float blink_delay = fscale(0, 1023, 400, 10, flexiforce_reading, -2);
+  float blink_delay = fscale(0, 1023, 400, 10, flexiforce_reading, 8);
+  
+  if (DEBUG) {
+    Serial.print("force: ");
+    Serial.print(flexiforce_reading);
+    Serial.print("delay:");
+    Serial.println(blink_delay);
+  }
 
   digitalWrite(test_led, HIGH);
   delay(blink_delay);
