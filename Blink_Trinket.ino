@@ -13,7 +13,8 @@ int clockPin = 8;
 int wait = 300;
 boolean DEBUG = true;
 int color_index = 0;
-WS2801 strip = WS2801(1, dataPin, clockPin);
+int strip_length = 10;
+WS2801 strip = WS2801(strip_length, dataPin, clockPin);
 
 // Basic setup.
 void setup() {                
@@ -32,10 +33,13 @@ void loop() {
   //float flexiforce_reading = 1.0;
   int flexiforce_reading = analogRead(A2);
   //int blink_delay = map(flexiforce_reading, 0, 1023, 30, 1200);
-  flexiforce_reading = flexiforce_reading - (flexiforce_reading % 25);
+  flexiforce_reading = flexiforce_reading - (flexiforce_reading % 50);
   float color = fscale(0, 650, 255, 0, flexiforce_reading, 2);
   
-  strip.setPixelColor(0, Wheel(color));
+  for (int i; i < strip_length; i++) {
+    int this_color = color + (i * 8);
+    strip.setPixelColor(i, Wheel(this_color));
+  }
   strip.show();
   
   if (DEBUG) {
