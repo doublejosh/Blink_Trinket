@@ -15,13 +15,15 @@ unsigned int strip[strip_length];
 
 // Program.
 int wait = 300;
-int force_curve = 2;
+int force_curve = 8;
 
 // Basic setup.
 void setup() {                
   // Initialize I/O.
   pinMode(test_led, OUTPUT);
   pinMode(PIN_IN_ONE, INPUT);
+  pinMode(PIN_DATA, OUTPUT);
+  pinMode(PIN_CLOCK, OUTPUT);
 }
 
 // Master looper.
@@ -30,6 +32,7 @@ void loop() {
   int flexiforce_reading = analogRead(ANALOG_READ_ONE);
   flexiforce_reading = flexiforce_reading - (flexiforce_reading % 50);
   unsigned int color = fscale(0, 650, 96, 0, flexiforce_reading, force_curve);
+  float blink_delay = fscale(0, 1023, 400, 10, flexiforce_reading, force_curve);
 
   for (int i; i < strip_length; i++) {
     //int this_color = color + (i * 3);
@@ -38,8 +41,9 @@ void loop() {
   show();
 
   digitalWrite(test_led, HIGH);
-  delay(wait);
+  delay(blink_delay);
   digitalWrite(test_led, LOW);
+  delay(blink_delay);
 }
 
 
@@ -53,21 +57,29 @@ void loop() {
 void show() {
   unsigned int i, b;
   // Pass through lights.
+  // http://playground.arduino.cc/Code/BitMath#registers
   for (i=0; i < strip_length; i++) {
-    bitWrite(PORTD, PIN_DATA, HIGH);
-    bitWrite(PORTD, PIN_CLOCK, HIGH);
-    bitWrite(PORTD, PIN_CLOCK, LOW);
+    digitalWrite(PIN_DATA, HIGH);
+    //bitWrite(PORTD, PIN_DATA, HIGH);
+    digitalWrite(PIN_CLOCK, HIGH);
+    //bitWrite(PORTD, PIN_CLOCK, HIGH);
+    digitalWrite(PIN_CLOCK, LOW);
+    //bitWrite(PORTD, PIN_CLOCK, LOW);
 
     // Bit shift loop.
     for (b = 0x4000; b; b >>= 1) {
       if (strip[i] & b) {
-        bitWrite(PORTD, PIN_DATA, HIGH);
+        digitalWrite(PIN_DATA, HIGH);
+        //bitWrite(PORTD, PIN_DATA, HIGH);
       }
       else {
-        bitWrite(PORTD, PIN_DATA, LOW);
+        digitalWrite(PIN_DATA, LOW);
+        //bitWrite(PORTD, PIN_DATA, LOW);
       }
-      bitWrite(PORTD, PIN_CLOCK, HIGH);
-      bitWrite(PORTD, PIN_CLOCK, LOW);
+      digitalWrite(PIN_CLOCK, HIGH);
+      //bitWrite(PORTD, PIN_CLOCK, HIGH);
+      digitalWrite(PIN_CLOCK, LOW);
+      //bitWrite(PORTD, PIN_CLOCK, LOW);
     }
   }
 
@@ -78,10 +90,13 @@ void show() {
  * Activate new color pattern in LED strip.
  */
 void latch_leds(int n) {
-  bitWrite(PORTD, PIN_DATA, LOW);
+  digitalWrite(PIN_DATA, LOW);
+  //bitWrite(PORTD, PIN_DATA, LOW);
   for (int i = 8 * n; i > 0; i--) {
-    bitWrite(PORTD, PIN_CLOCK, HIGH);
-    bitWrite(PORTD, PIN_CLOCK, LOW);
+    digitalWrite(PIN_CLOCK, HIGH);
+    //bitWrite(PORTD, PIN_CLOCK, HIGH);
+    digitalWrite(PIN_CLOCK, LOW);
+    //bitWrite(PORTD, PIN_CLOCK, LOW);
   }
 }
 
@@ -89,9 +104,9 @@ void latch_leds(int n) {
  * Set color value as RGB argument, values = 0..31
  */
 unsigned int color(int r, int g, int b) {
-  r=r & 0x1F;
-  g=g & 0x1F;
-  b=b & 0x1F;
+  r = r & 0x1F;
+  g = g & 0x1F;
+  b = b & 0x1F;
   return  (b << 10) | (r << 5) | g;
 }
 
@@ -102,19 +117,19 @@ unsigned int wheel(int WheelPos) {
   byte r, g, b;
   switch (WheelPos / 32) {
   case 0:
-    r = 31 - WheelPos % 32;   //Red down
+    r = 31 - WheelPos % 32; // Red down
     g = WheelPos % 32;      // Green up
-    b = 0;                  //blue off
+    b = 0;                  // blue off
     break;
   case 1:
-    g = 31 - WheelPos % 32;  //green down
-    b = WheelPos % 32;      //blue up
-    r = 0;                  //red off
+    g = 31 - WheelPos % 32; // green down
+    b = WheelPos % 32;      // blue up
+    r = 0;                  // red off
     break;
   case 2:
-    b = 31 - WheelPos % 32;  //blue down
-    r = WheelPos % 32;      //red up
-    g = 0;                  //green off
+    b = 31 - WheelPos % 32; // blue down
+    r = WheelPos % 32;      // red up
+    g = 0;                  // green off
     break;
   }
 
