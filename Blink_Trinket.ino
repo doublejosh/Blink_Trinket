@@ -2,65 +2,129 @@
  * Sense and blink.
  */
 
-#include "SPI.h"
-#include "WS2801.h"
+// I/O.
+int test_led = 1;        // Trinket built in LED is 1, standard Arduinos use 13.
+int PIN_IN_ONE = 2;      // Input for force: front.
+int ANALOG_READ_ONE = 1; // Analog input for force: front.
+int PIN_DATA = 0;        // Digital data out to lights.
+int PIN_CLOCK = 1;       // Digital clock out to lights.
 
-// Trinket built in LED is 1, standard Arduinos use 13.
-int test_led = 1; // Trinket built in LED.
-int dataPin = 7;
-int clockPin = 8;
+// Manage strip mangually.
+const int strip_length = 10;
+unsigned int strip[strip_length];
 
+// Program.
 int wait = 300;
-boolean DEBUG = true;
-int color_index = 0;
-int strip_length = 10;
-WS2801 strip = WS2801(strip_length, dataPin, clockPin);
+int force_curve = 2;
 
 // Basic setup.
 void setup() {                
-  // Initialize the digital pin as an output.
+  // Initialize I/O.
   pinMode(test_led, OUTPUT);
-  pinMode(A2, INPUT);
-  strip.begin();
-
-  if (DEBUG) {
-    Serial.begin(9600);
-  }
+  pinMode(PIN_IN_ONE, INPUT);
 }
 
 // Master looper.
 void loop() {
   //float flexiforce_reading = 1.0;
-  int flexiforce_reading = analogRead(A2);
-  //int blink_delay = map(flexiforce_reading, 0, 1023, 30, 1200);
+  int flexiforce_reading = analogRead(ANALOG_READ_ONE);
   flexiforce_reading = flexiforce_reading - (flexiforce_reading % 50);
-  float color = fscale(0, 650, 255, 0, flexiforce_reading, 2);
-  
+  unsigned int color = fscale(0, 650, 96, 0, flexiforce_reading, force_curve);
+
   for (int i; i < strip_length; i++) {
-    int this_color = color + (i * 8);
-    strip.setPixelColor(i, Wheel(this_color));
+    //int this_color = color + (i * 3);
+    strip[i] = wheel(color);
   }
-  strip.show();
-  
-  if (DEBUG) {
-    Serial.print("force: ");
-    Serial.print(flexiforce_reading);
-    Serial.print(" color:");
-    Serial.println(color);
-  }
+  show();
 
   digitalWrite(test_led, HIGH);
   delay(wait);
-
   digitalWrite(test_led, LOW);
 }
 
 
+/******************************
+ * UTILITY FUNCTIONS...
+ */
+
+/**
+ * Send color values from pixel array to led strip.
+ */
+void show() {
+  unsigned int i, b;
+  // Pass through lights.
+  for (i=0; i < strip_length; i++) {
+    bitWrite(PORTD, PIN_DATA, HIGH);
+    bitWrite(PORTD, PIN_CLOCK, HIGH);
+    bitWrite(PORTD, PIN_CLOCK, LOW);
+
+    // Bit shift loop.
+    for (b = 0x4000; b; b >>= 1) {
+      if (strip[i] & b) {
+        bitWrite(PORTD, PIN_DATA, HIGH);
+      }
+      else {
+        bitWrite(PORTD, PIN_DATA, LOW);
+      }
+      bitWrite(PORTD, PIN_CLOCK, HIGH);
+      bitWrite(PORTD, PIN_CLOCK, LOW);
+    }
+  }
+
+  latch_leds(strip_length);
+}
+
+/**
+ * Activate new color pattern in LED strip.
+ */
+void latch_leds(int n) {
+  bitWrite(PORTD, PIN_DATA, LOW);
+  for (int i = 8 * n; i > 0; i--) {
+    bitWrite(PORTD, PIN_CLOCK, HIGH);
+    bitWrite(PORTD, PIN_CLOCK, LOW);
+  }
+}
+
+/**
+ * Set color value as RGB argument, values = 0..31
+ */
+unsigned int color(int r, int g, int b) {
+  r=r & 0x1F;
+  g=g & 0x1F;
+  b=b & 0x1F;
+  return  (b << 10) | (r << 5) | g;
+}
+
+/**
+ * Colorwheel with 96 colors, 0..95
+ */
+unsigned int wheel(int WheelPos) {
+  byte r, g, b;
+  switch (WheelPos / 32) {
+  case 0:
+    r = 31 - WheelPos % 32;   //Red down
+    g = WheelPos % 32;      // Green up
+    b = 0;                  //blue off
+    break;
+  case 1:
+    g = 31 - WheelPos % 32;  //green down
+    b = WheelPos % 32;      //blue up
+    r = 0;                  //red off
+    break;
+  case 2:
+    b = 31 - WheelPos % 32;  //blue down
+    r = WheelPos % 32;      //red up
+    g = 0;                  //green off
+    break;
+  }
+
+  return(color(r,g,b));
+}
+
 /**
  * Map with curve.
  */
-float fscale( float originalMin, float originalMax, float newBegin, float
-newEnd, float inputValue, float curve){
+float fscale( float originalMin, float originalMax, float newBegin, float newEnd, float inputValue, float curve){
 
   float OriginalRange = 0;
   float NewRange = 0;
@@ -68,7 +132,6 @@ newEnd, float inputValue, float curve){
   float normalizedCurVal = 0;
   float rangedValue = 0;
   boolean invFlag = 0;
-
 
   // condition curve parameter
   // limit range
@@ -131,32 +194,5 @@ newEnd, float inputValue, float curve){
   }
 
   return rangedValue;
-}
-
-// Create a 24 bit color value from R,G,B
-uint32_t Color(byte r, byte g, byte b)
-{
-  uint32_t c;
-  c = r;
-  c <<= 8;
-  c |= g;
-  c <<= 8;
-  c |= b;
-  return c;
-}
-
-//Input a value 0 to 255 to get a color value.
-//The colours are a transition r - g -b - back to r
-uint32_t Wheel(byte WheelPos)
-{
-  if (WheelPos < 85) {
-   return Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-  } else if (WheelPos < 170) {
-   WheelPos -= 85;
-   return Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  } else {
-   WheelPos -= 170; 
-   return Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
 }
 
