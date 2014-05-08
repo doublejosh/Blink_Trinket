@@ -5,12 +5,12 @@
 #include "Simple_WS2801.h"
 
 // I/O.
-const int test_led = 1;        // Trinket built in LED is 1, standard Arduinos use 13.
+//const int test_led = 1;        // Trinket built in LED is 1, standard Arduinos use 13.
 const int PIN_IN_ONE = 2;      // Input for force: front.
 const int ANALOG_READ_ONE = 1; // Analog input for force: front.
 const int PIN_DATA = 0;        // Digital data out to lights.
 const int PIN_CLOCK = 1;       // Digital clock out to lights.
-const int FORCE_STEPS = 25;
+const int FORCE_STEPS = 15;
 
 // Manage strip mangually.
 Simple_WS2801 strip = Simple_WS2801(7, PIN_DATA, PIN_CLOCK);
@@ -25,7 +25,7 @@ const int WHEEL_MAX = 255;
 // Basic setup.
 void setup() {
   // Initialize hardware.
-  pinMode(test_led, OUTPUT);
+  //pinMode(test_led, OUTPUT);
   pinMode(PIN_IN_ONE, INPUT);
   pinMode(PIN_DATA, OUTPUT);
   pinMode(PIN_CLOCK, OUTPUT);
@@ -44,10 +44,12 @@ void loop() {
   }
   strip.show();
 
+  /*
   digitalWrite(test_led, HIGH);
   delay(blink_delay);
   digitalWrite(test_led, LOW);
   delay(blink_delay);
+  */
 }
 
 
