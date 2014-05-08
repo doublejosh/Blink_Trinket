@@ -10,36 +10,36 @@ const int PIN_IN_ONE = 2;      // Input for force: front.
 const int ANALOG_READ_ONE = 1; // Analog input for force: front.
 const int PIN_DATA = 0;        // Digital data out to lights.
 const int PIN_CLOCK = 1;       // Digital clock out to lights.
+const int FORCE_STEPS = 25;
 
 // Manage strip mangually.
-const int strip_length = 10;
-Simple_WS2801 strip = Simple_WS2801(strip_length, PIN_DATA, PIN_CLOCK);
+Simple_WS2801 strip = Simple_WS2801(7, PIN_DATA, PIN_CLOCK);
 
 // Program.
-const int wait = 300;
 const int force_curve = 8;
+const int color_curve = 0;
 
 // Utility.
 const int WHEEL_MAX = 255;
 
 // Basic setup.
-void setup() {                
-  // Initialize I/O.
+void setup() {
+  // Initialize hardware.
   pinMode(test_led, OUTPUT);
   pinMode(PIN_IN_ONE, INPUT);
   pinMode(PIN_DATA, OUTPUT);
   pinMode(PIN_CLOCK, OUTPUT);
+  strip.begin();
 }
 
 // Master looper.
 void loop() {
-  //float flexiforce_reading = 1.0;
   int flexiforce_reading = analogRead(ANALOG_READ_ONE);
-  flexiforce_reading = flexiforce_reading - (flexiforce_reading % 50);
-  unsigned int color = fscale(0, 650, WHEEL_MAX, 0, flexiforce_reading, force_curve);
-  int blink_delay = fscale(0, 1023, 400, 10, flexiforce_reading, force_curve);
+  flexiforce_reading = flexiforce_reading - (flexiforce_reading % FORCE_STEPS);
+  int color = fscale(0, 650, 0, WHEEL_MAX, flexiforce_reading, color_curve);
+  float blink_delay = fscale(0, 1023, 400, 10, flexiforce_reading, force_curve);
 
-  for (int i; i < strip_length; i++) {
+  for (int i=0; i < strip.numPixels(); i++) {
     strip.setPixelColor(i, Wheel(color));
   }
   strip.show();
@@ -87,13 +87,13 @@ uint32_t Wheel(byte WheelPos) {
 /**
  * Map with curve.
  */
-int fscale(int originalMin, int originalMax, int newBegin, int newEnd, int inputValue, int curve){
+int fscale(int originalMin, int originalMax, int newBegin, int newEnd, int inputValue, float curve){
 
-  int OriginalRange = 0;
-  int NewRange = 0;
-  int zeroRefCurVal = 0;
-  int normalizedCurVal = 0;
-  int rangedValue = 0;
+  float OriginalRange = 0;
+  float NewRange = 0;
+  float zeroRefCurVal = 0;
+  float normalizedCurVal = 0;
+  float rangedValue = 0;
   boolean invFlag = 0;
 
   // condition curve parameter
