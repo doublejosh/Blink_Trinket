@@ -2,7 +2,7 @@
  * Sense and blink.
  */
  
-#include "Adafruit_WS2801.h"
+#include "Simple_WS2801.h"
 
 // I/O.
 const int test_led = 1;        // Trinket built in LED is 1, standard Arduinos use 13.
@@ -13,7 +13,7 @@ const int PIN_CLOCK = 1;       // Digital clock out to lights.
 
 // Manage strip mangually.
 const int strip_length = 10;
-Adafruit_WS2801 strip = Adafruit_WS2801(strip_length, PIN_DATA, PIN_CLOCK);
+Simple_WS2801 strip = Simple_WS2801(strip_length, PIN_DATA, PIN_CLOCK);
 
 // Program.
 const int wait = 300;
@@ -88,6 +88,7 @@ uint32_t Wheel(byte WheelPos) {
  * Map with curve.
  */
 int fscale(int originalMin, int originalMax, int newBegin, int newEnd, int inputValue, int curve){
+
   int OriginalRange = 0;
   int NewRange = 0;
   int zeroRefCurVal = 0;
@@ -104,6 +105,11 @@ int fscale(int originalMin, int originalMax, int newBegin, int newEnd, int input
   curve = (curve * -.1) ; // - invert and scale - this seems more intuitive - postive numbers give more weight to high end on output
   curve = pow(10, curve); // convert linear scale into lograthimic exponent for other pow function
 
+  /*
+   Serial.println(curve * 100, DEC);   // multply by 100 to preserve resolution  
+   Serial.println();
+   */
+
   // Check for out of range inputValues
   if (inputValue < originalMin) {
     inputValue = originalMin;
@@ -115,10 +121,11 @@ int fscale(int originalMin, int originalMax, int newBegin, int newEnd, int input
   // Zero Refference the values
   OriginalRange = originalMax - originalMin;
 
-  if (newEnd > newBegin) {
+  if (newEnd > newBegin){
     NewRange = newEnd - newBegin;
   }
-  else {
+  else
+  {
     NewRange = newBegin - newEnd;
     invFlag = 1;
   }
@@ -132,7 +139,7 @@ int fscale(int originalMin, int originalMax, int newBegin, int newEnd, int input
   }
 
   if (invFlag == 0) {
-    rangedValue = (pow(normalizedCurVal, curve) * NewRange) + newBegin;
+    rangedValue =  (pow(normalizedCurVal, curve) * NewRange) + newBegin;
 
   }
   else {  

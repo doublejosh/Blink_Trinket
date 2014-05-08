@@ -1,4 +1,4 @@
-#define __ADAFRUIT_WS2801__
+#define __SIMPLE_WS2801__
 
 #if (ARDUINO >= 100)
  #include <Arduino.h>
@@ -15,14 +15,14 @@
 #define WS2801_RGB 0
 #define WS2801_GRB 1
 
-class Adafruit_WS2801 {
+class Simple_WS2801 {
 
  public:
 
   // Configurable pins:
-  Adafruit_WS2801(uint16_t n, uint8_t dpin, uint8_t cpin, uint8_t order=WS2801_RGB);
+  Simple_WS2801(uint16_t n, uint8_t dpin, uint8_t cpin, uint8_t order=WS2801_RGB);
   // Release memory (as needed):
-  ~Adafruit_WS2801();
+  ~Simple_WS2801();
 
   void
     begin(void),
