@@ -10,16 +10,21 @@ const int PIN_IN_ONE = 2;      // Input for force: front.
 const int ANALOG_READ_ONE = 1; // Analog input for force: front.
 const int PIN_DATA = 0;        // Digital data out to lights.
 const int PIN_CLOCK = 1;       // Digital clock out to lights.
-const int FORCE_STEPS = 15;
+const int FORCE_STEPS = 5;
 
-// Manage strip mangually.
+// Manage strip.
 Simple_WS2801 strip = Simple_WS2801(7, PIN_DATA, PIN_CLOCK);
+uint32_t meta_strip[7];
 
 // Program.
-const int force_curve = 8;
-const int color_curve = 0;
+//const int blink_curve = 5;
+const int color_curve = 2;
+//const int color_curve = -10;
+const int wait = 25;
 
 // Utility.
+const int FORCE_MAX = 650;
+//const int FORCE_MAX = 1023;
 const int WHEEL_MAX = 255;
 
 // Basic setup.
@@ -36,15 +41,20 @@ void setup() {
 void loop() {
   int flexiforce_reading = analogRead(ANALOG_READ_ONE);
   flexiforce_reading = flexiforce_reading - (flexiforce_reading % FORCE_STEPS);
-  int color = fscale(0, 650, 0, WHEEL_MAX, flexiforce_reading, color_curve);
-  float blink_delay = fscale(0, 1023, 400, 10, flexiforce_reading, force_curve);
+  int color = fscale(0, FORCE_MAX, 0, WHEEL_MAX, flexiforce_reading, color_curve);
+  //float blink_delay = fscale(0, 1023, 400, 10, flexiforce_reading, blink_curve);
 
-  for (int i=0; i < strip.numPixels(); i++) {
-    strip.setPixelColor(i, Wheel(color));
+  strip.setPixelColor(0, Wheel(color));
+  meta_strip[0] = Wheel(color);
+  for (int i=1; i < strip.numPixels(); i++) {
+    meta_strip[i] = meta_strip[i - 1];
+    strip.setPixelColor(i, meta_strip[i - 1]);
+    strip.show();
+    delay(wait);
   }
-  strip.show();
 
   /*
+  // Blinks the on-board test LED with force.
   digitalWrite(test_led, HIGH);
   delay(blink_delay);
   digitalWrite(test_led, LOW);
