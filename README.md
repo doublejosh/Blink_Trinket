@@ -1,6 +1,10 @@
 Force Blink the Trinket
 =============
 
-Demo of using a force sensor to control the test LED on a Trinket controller.
+Demo of using a force sensor to control LEDs on a Trinket micro controller.
 
-Just for testing and keeping some sanity.
+Use this for testing and maintaing sanity, as this contains quite a few pit falls.
+
+**DEPENDENCY:**
+
+https://github.com/doublejosh/Simple_WS2801
