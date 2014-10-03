@@ -1,10 +1,10 @@
-Force Blink the Trinket
+Make rainbows when you dance.
 =============
 
-Demo of using a force sensor to control LEDs on a Trinket micro controller.
-
-Use this for testing and maintaing sanity, as this contains quite a few pit falls.
+Use a force sensor to control LEDs via a Trinket micro controller. LED strand will chase rainbow
+colors around skipping pixels to save batteries and create movement. Color moves the opposite
+direction of apparent light movement. Brightness reduction configuration also helps save batteries.
+Includes a sensitivity input adjustment with a potentiometer.
 
 **DEPENDENCY:**
-
-https://github.com/doublejosh/Simple_WS2801
+https://github.com/adafruit/Adafruit_NeoPixel
